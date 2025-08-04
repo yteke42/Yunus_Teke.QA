@@ -1,40 +1,29 @@
 import unittest
 import sys
 import os
+import time
 from pages.home_page import HomePage
 from pages.careers_page import CareersPage
 from tests.base_test import BaseTest
+import time
 
 class TestInsiderWebsite(BaseTest):
-    """
-    Test class for Insider website functionality.
-    """
     
     def test_homepage_is_opened(self):
-        """
-        Test: Visit https://useinsider.com/ and check Insider home page is opened or not
-        
-        Steps:
-        1. Navigate to https://useinsider.com/
-        2. Check if homepage is loaded properly
-        3. Verify page title contains "Insider"
-        4. Verify key homepage elements are present
-        """
-        
         try:
-            # Create HomePage object (POM implementation)
+            # HomePage objesi oluşturuyorum (POM)
             home_page = HomePage(self.driver)
             
-            # Step 1: Check if homepage is loaded
+            # Ana sayfanın yüklenip yüklenmediğini kontrol ediyorum
             self.assertTrue(home_page.is_homepage_loaded(), 
                           "Homepage should be loaded properly")
             
-            # Step 2: Verify page title
+            # Sayfa başlığını doğruluyorum
             title = home_page.get_page_title()
             self.assertIn("Insider", title, 
                          "Page title should contain 'Insider'")
             
-            # Step 3: Verify we're on the correct URL
+            # Doğru URL'de olup olmadığımızı kontrol ediyorum
             current_url = self.driver.current_url
             self.assertIn("useinsider.com", current_url.lower(), 
                          "Should be on Insider website")
@@ -42,138 +31,119 @@ class TestInsiderWebsite(BaseTest):
             print("Homepage test completed successfully!")
             
         except Exception as e:
-            # Take screenshot on failure (requirement)
+            # Hata durumunda screenshot alıyorum (gereksinim)
             self.take_screenshot("homepage_test_failure")
             raise e
     
     def test_company_menu_navigation_and_careers_blocks(self):
-        """
-        Test: Select the "Company" menu in the navigation bar, select "Careers" and check Career
-        page, its Locations, Teams, and Life at Insider blocks are open or not
-        
-        Steps:
-        1. Navigate to homepage
-        2. Click on "Company" menu in navigation bar
-        3. Click on "Careers" link
-        4. Verify navigation to careers page
-        5. Check if Locations block is present
-        6. Check if Teams block is present
-        7. Check if Life at Insider block is present
-        """
-        
         try:
-            # Create page objects (POM implementation)
+            # Page object'leri oluşturuyorum (POM)
             home_page = HomePage(self.driver)
             careers_page = CareersPage(self.driver)
             
-            # Step 1: Verify homepage is loaded
+            # Ana sayfanın yüklenip yüklenmediğini kontrol ediyorum
             self.assertTrue(home_page.is_homepage_loaded(), 
                           "Homepage should be loaded properly")
             
-            # Step 2: Click on "Company" menu in navigation bar
+            # Navigation bar'daki "Company" menüsüne tıklıyorum
             self.assertTrue(home_page.click_company_menu(), 
                           "Should be able to click Company menu")
             
-            # Step 3: Click on "Careers" link
+            # "Careers" linkine tıklıyorum
             self.assertTrue(home_page.click_careers_link(), 
                           "Should be able to click Careers link")
             
-            # Step 4: Verify navigation to careers page
+            # Careers sayfasına yönlendirme olup olmadığını kontrol ediyorum
             self.assertIn("careers", self.driver.current_url.lower(), 
                          "Should be redirected to careers page")
             
-            # Step 5-7: Check if careers page blocks are present
+            # Careers sayfası bloklarının olup olmadığını kontrol ediyorum
             self.assertTrue(careers_page.verify_careers_page_blocks(), 
                           "Careers page blocks should be present")
             
-            print("Company menu navigation and careers blocks test completed successfully!")
-            
         except Exception as e:
-            # Take screenshot on failure (requirement)
+            # Hata durumunda screenshot alıyorum (gereksinim)
             self.take_screenshot("company_menu_careers_test_failure")
             raise e
     
     def test_qa_jobs_navigation_and_filtering(self):
-        """
-        Test: Go to https://useinsider.com/careers/quality-assurance/, click "See all QA jobs", filter
-        jobs by Location: "Istanbul, Turkey", and Department: "Quality Assurance", check the
-        presence of the job list
-        
-        Steps:
-        1. Navigate directly to QA careers page
-        2. Click "See all QA jobs" button
-        3. Filter jobs by Location: "Istanbul, Turkey"
-        4. Filter jobs by Department: "Quality Assurance"
-        5. Check the presence of the job list
-        """
-        
         try:
-            # Create page objects (POM implementation)
+            # Page object'leri oluşturuyorum
             careers_page = CareersPage(self.driver)
             
-            # Step 1: Navigate directly to QA careers page
+            # QA careers sayfasına direkt gidiyorum
             self.driver.get("https://useinsider.com/careers/quality-assurance/")
             
-            # Verify we're on the correct page
+            # Doğru sayfada olup olmadığımızı kontrol ediyorum
             current_url = self.driver.current_url
             self.assertIn("quality-assurance", current_url.lower(), 
-                         "Should be on QA careers page")
+                           "Should be on QA careers page")
             
-            # Step 2: Click "See all QA jobs" button
+            # "See all QA jobs" butonuna tıklıyorm
             self.assertTrue(careers_page.click_see_all_qa_jobs(), 
-                          "Should be able to click See all QA jobs")
+                           "Should be able to click See all QA jobs")
             
-            # Step 3: Filter jobs by Location: "Istanbul, Turkiye"
+            # Yeni sayfanın yüklenmesini ve işlerin yüklenmesini bekliyorum
+            time.sleep(3)  # Sayfa navigasyonu için bekliyorum
+            self.assertTrue(careers_page.wait_for_jobs_to_load(), 
+                           "Jobs should load successfully on the new page")
+            
+            # İşleri lokasyon ile filtreliyorum: "Istanbul, Turkiye"
             try:
-                location_filter_result = careers_page.filter_by_location("Istanbul, Turkiye")
-                if location_filter_result:
+                location_options = careers_page.filter_by_location("Istanbul, Turkiye")
+                if location_options and "Istanbul, Turkiye" in location_options:
                     print("Successfully filtered by Istanbul, Turkiye")
                 else:
                     print("Location filter not available or failed")
             except Exception as e:
                 print(f"Location filter not available: {e}")
+                location_options = []
             
-            # Step 4: Filter jobs by Department: "Quality Assurance"
+            # İşleri departman ile filtreliyorum: "Quality Assurance"
             try:
-                department_filter_result = careers_page.filter_by_department("Quality Assurance")
-                if department_filter_result:
+                department_options = careers_page.filter_by_department("Quality Assurance")
+                if department_options and "Quality Assurance" in department_options:
                     print("Successfully filtered by Quality Assurance")
                 else:
                     print("Department filter not available or failed")
             except Exception as e:
                 print(f"Department filter not available: {e}")
+                department_options = []
             
-            # Step 5: Check the presence of the job list
-            job_list_present = careers_page.verify_job_list_present()
-            if job_list_present:
-                print("Job list is present on the page")
-            else:
-                print("Job list not found, but this might be expected")
+            # İş listesinin olup olmadığını kontrol ediyorum
+            self.assertTrue(careers_page.verify_job_list_present(),
+                          "Job list should be present on the page")
             
-            # Additional verification: Check if any jobs are displayed
-            try:
-                # Try to find any job-related elements (using new Selenium syntax)
-                from selenium.webdriver.common.by import By
-                job_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(),'job') or contains(text(),'position') or contains(text(),'role')]")
-                if job_elements:
-                    print(f"Found {len(job_elements)} job-related elements on the page")
+            if location_options and department_options:
+                verification_result = careers_page.verify_filtered_jobs_contain_expected_values(location_options, department_options)
+                if verification_result:
+                    print("All jobs contain expected Quality Assurance and Istanbul, Turkiye values")
                 else:
-                    print("No job-related elements found")
-            except Exception as e:
-                print(f"Error checking for job elements: {e}")
+                    print("Some jobs do not contain expected values")
+            else:
+                print("⚠️ Cannot verify job values - filter options not available")
             
-            import time
-            time.sleep(10)
             print("QA jobs navigation and filtering test completed successfully!")
             
+            time.sleep(5) #iş listesinin güncellenmesini bekliyorum
+            self.assertTrue(careers_page.click_view_role_button(), 
+                          "Should be able to click View Role button.")
+
+
+            time.sleep(8) #yönlendirme sayfasının yüklenmesini bekliyorum
+            self.assertTrue(careers_page.verify_redirect_to_lever(),
+                            "Should be redirected to lever page.")
+            time.sleep(2)
+            
+
         except Exception as e:
-            # Take screenshot on failure (requirement)
+            # Hata durumunda screenshot alıyorum (gereksinim)
             self.take_screenshot("qa_jobs_filtering_test_failure")
             raise e
 
 if __name__ == "__main__":
-    # Create screenshots directory
+    # Screenshots klasörü
     os.makedirs("screenshots", exist_ok=True)
     
-    # Run the tests
+    # Testleri çalıştırıyorum
     unittest.main(verbosity=3) 

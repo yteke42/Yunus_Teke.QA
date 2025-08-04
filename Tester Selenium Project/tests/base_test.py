@@ -11,18 +11,10 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
 class BaseTest(unittest.TestCase):
-    """
-    Base test class that provides common setup and teardown methods.
-    All test classes should inherit from this class.
-    """
     
     @classmethod
     def setUpClass(cls):
-        """
-        Set up test class - runs once before all tests.
-        Initializes the WebDriver with Chrome browser.
-        """
-        # Configure Chrome options
+        # Chrome seçeneklerini yapılandırıyorum
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
@@ -30,8 +22,8 @@ class BaseTest(unittest.TestCase):
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-popup-blocking")
         
-        # Suppress console warnings and logging
-        chrome_options.add_argument("--log-level=3")  # Only show fatal errors
+        # Console uyarılarını bastırıyorum çünkü console'um çığlık atıyordu
+        chrome_options.add_argument("--log-level=3")  
         chrome_options.add_argument("--silent")
         chrome_options.add_argument("--disable-logging")
         chrome_options.add_argument("--disable-default-apps")
@@ -43,7 +35,7 @@ class BaseTest(unittest.TestCase):
         chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        # Initialize WebDriver
+        # WebDriver'ı başlatıyorum
         try:
             cls.driver = webdriver.Chrome(options=chrome_options)
         except Exception as e:
@@ -54,36 +46,22 @@ class BaseTest(unittest.TestCase):
     
     @classmethod
     def tearDownClass(cls):
-        """
-        Clean up test class - runs once after all tests.
-        Closes the browser.
-        """
+        #Tüm testlerden sonra bir kez çalışır. Browser'ı kapatır
         if hasattr(cls, 'driver'):
             cls.driver.quit()
     
     def setUp(self):
-        """
-        Set up each test method.
-        Navigate to the homepage before each test.
-        """
+        #Testten önce ana sayfaya gidiyorum.
         self.driver.get("https://useinsider.com/")
     
     def tearDown(self):
-        """
-        Clean up after each test method.
-        Clear cookies and local storage.
-        """
+        #Her test metodundan sonra Cookie'leri ve local storage'ı temizliyorum.
         self.driver.delete_all_cookies()
         self.driver.execute_script("window.localStorage.clear();")
         self.driver.execute_script("window.sessionStorage.clear();")
     
     def take_screenshot(self, name):
-        """
-        Take a screenshot if test fails.
-        
-        Args:
-            name: Name for the screenshot file
-        """
+        # Test başarısız olursa screenshot alıyorum.
         try:
             screenshot_path = f"screenshots/{name}.png"
             os.makedirs("screenshots", exist_ok=True)
