@@ -121,7 +121,7 @@ class TestInsiderWebsite(BaseTest):
                 else:
                     print("Some jobs do not contain expected values")
             else:
-                print("⚠️ Cannot verify job values - filter options not available")
+                print("Cannot verify job values - filter options not available")
             
             print("QA jobs navigation and filtering test completed successfully!")
             
